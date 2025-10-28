@@ -1,0 +1,73 @@
+---
+  - name: Download Vector
+    ansible.builtin.get_url:
+      url: "{{ vector_url }}"
+
+      dest: "/tmp/vector.tar.gz"
+      mode: '0644'
+
+  - name: Create extraction directory
+    ansible.builtin.file:
+      path: /tmp/vector-extracted
+      state: directory
+      mode: '0755'
+
+  - name: Extract Vector binary
+    ansible.builtin.unarchive:
+      src: /tmp/vector.tar.gz
+      dest: /tmp/vector-extracted
+      extra_opts: ["--strip-components=2"]
+      remote_src: true
+
+  - name: Find Vector binary
+    ansible.builtin.find:
+      paths: "/tmp/vector-extracted/bin"
+      patterns: "vector"
+      file_type: "file"
+    register: vector_binary
+
+  - name: Debug found files
+    ansible.builtin.debug:
+      var: vector_binary.files
+
+  - name: Copy Vector binary
+    ansible.builtin.copy:
+      src: "{{ vector_binary.files[0].path }}"
+      dest: /usr/bin/vector
+      mode: '0755'
+      owner: root
+      group: root
+      remote_src: true
+    when: vector_binary.matched > 0
+
+
+  - name: Create Vector config directory
+    ansible.builtin.file:
+      path: /etc/vector
+      state: directory
+      mode: '0755'
+
+  - name: Deploy Vector config
+    ansible.builtin.template:
+      src: "vector.yml.j2"
+      dest: "/etc/vector/vector.yaml"
+      mode: '0644'
+
+  - name: Create Vector service
+    ansible.builtin.copy:
+      content: |
+        [Service]
+        ExecStart=/usr/bin/vector --config-yaml /etc/vector/vector.yaml
+        Restart=always
+
+        [Install]
+        WantedBy=multi-user.target
+      dest: /etc/systemd/system/vector.service
+      mode: '0644'
+
+  - name: Start Vector service
+    ansible.builtin.systemd:
+      name: vector
+      state: started
+      enabled: true
+      daemon_reload: true

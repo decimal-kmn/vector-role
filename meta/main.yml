@@ -1,0 +1,17 @@
+#SPDX-License-Identifier: MIT-0
+galaxy_info:
+  author: Mike Kolmykov
+  description: This role deploys Vector (is a high-performance, open-source observability data pipeline)
+  company: decimal separator inc.
+
+  license: license MIT
+
+  min_ansible_version: 2.1
+
+galaxy_tags:
+  - vector
+  - logs
+  - clickhouse
+  - monitoring
+
+dependencies: []

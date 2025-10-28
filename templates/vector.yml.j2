@@ -1,0 +1,29 @@
+sources:
+  generate_syslog:
+    type: "demo_logs"
+    format: "syslog"
+    count: 1000
+
+transforms:
+  syslog:
+    inputs:
+      - "generate_syslog"
+    type: "remap"
+    source: |
+      structured = parse_syslog!(.message)
+      . = merge(., structured)
+
+sinks:
+  clickhouse:
+    type: clickhouse
+    inputs: 
+      - syslog
+    endpoint: "http://10.0.1.4:8123"
+    database: logging
+    table: logs
+    skip_unknown_fields: true
+    healthcheck: true
+    auth:
+      strategy: basic
+      user: vector
+      password: "chuchundra"
