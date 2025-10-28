@@ -1,4 +1,4 @@
-Role Name
+Vector ansible role
 =========
 
 This role deploys Vector (is a high-performance, open-source observability data pipeline)
@@ -17,12 +17,13 @@ Dependencies
 
 Example Playbook
 ----------------
-
+```bash
 - name: Deploy Vector
   hosts: vector
   become: true
   roles:
     - vector-role
+```
 
 License
 -------
